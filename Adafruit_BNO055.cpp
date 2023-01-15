@@ -170,8 +170,24 @@ bool Adafruit_BNO055::begin(adafruit_bno055_opmode_t mode) {
  */
 void Adafruit_BNO055::setMode(adafruit_bno055_opmode_t mode) {
   _mode = mode;
-  write8(BNO055_OPR_MODE_ADDR, _mode);
-  delay(30);
+  int retryNum = 0;
+  int numTimesToRetry = 100;
+  while (getMode() != mode && retryNum < numTimesToRetry) {
+    if (debug > 2) {
+      Serial.print("Setting mode from ");
+      Serial.print(getMode(), HEX);
+      Serial.print(" to ");
+      Serial.print(_mode, HEX);
+      Serial.print(" try number: ");
+      Serial.println(retryNum);
+    }
+    write8(BNO055_OPR_MODE_ADDR, _mode);
+    delay(100);
+    retryNum++;
+  }
+  if (getMode() != mode) {
+    Serial.println("Failed to set mode!");
+  }
 }
 
 /*!
